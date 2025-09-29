@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"> <!--if not logged in then every page should link to login page per spec--> 
+  <head>
+  <title>Insta485</title>
+</head>
+
+<body> <!--images could use fixing of lcoations into var/-->
+  <h1>Main Page</h1>
+  <a href="{{ url_for('show_index') }}">Main Page</a>
+  <a href="{{ url_for('show_explore') }}">Go to Explore</a> <!--if logged in then link to explore page--> 
+  <a href="{{ url_for('show_user', username=logname)}}">Link to Page of {{ logname }}</a> <!--if logged in then link to profile page--> 
+  {% for post in posts %}
+
+  <div class="user">
+    <a href="{{ url_for('show_user', username=post['owner']) }}">
+    <img src="{{ url_for('upload_file', filename=post['owner_pic']) }}"
+        alt="{{ post['owner'] }} profile picture"
+        class="profile-pic">
+    <span class="username">{{ post['owner'] }}</span>
+  </a>
+</div>
+
+<div class="post">
+    <p>
+      <a href="{{ url_for('show_post', postid=post['postid'])}}">
+        Created {{ post['created_human'] }}</a>
+    </p>
+    <img src="{{ url_for('upload_file', filename=post['post_file']) }}" alt="Post image">
+  </div>
+
+<div class="likes">
+  <p>{{ post['like_count'] }} 
+    {% if post['like_count'] == 1 %}
+    like
+    {% else %}
+    likes
+    {% endif %}
+  </p>
+</div>
+
+<div class="comments">
+  {% for comment in post['comments']%}
+    <p>
+    <a href="{{ url_for('show_user', username=comment['owner']) }}"> 
+      {{ comment['owner'] }}
+    </a>
+    {{ comment['text'] }}
+    </p>
+    {% endfor %}
+</div>
+
+{% if post['logname_likes_post']%}
+  <form action="{{ url_for('update_likes') }}?target={{ url_for('show_index') }}" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="operation" value="unlike"/>
+    <input type="hidden" name="postid" value="{{ post['postid'] }}"/>
+    <input type="submit" name="unlike" value="unlike"/>
+  </form>
+{% else %}
+  <form action="{{ url_for('update_likes') }}?target={{ url_for('show_index') }}" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="operation" value="like"/>
+    <input type="hidden" name="postid" value="{{ post['postid'] }}"/>
+    <input type="submit" name="like" value="like"/>
+  </form>
+{% endif %}
+
+
+
+<form action="{{ url_for('add_comment') }}?target={{ url_for('show_index') }}" method="post" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="operation" value="create"/>
+  <input type="hidden" name="postid" value="{{ post['postid'] }}"/>
+  <input type="text" name="text" required/>
+  <input type="submit" name="comment" value="comment"/>
+</form>
+
+
+
+
+  {% endfor %}
+</body>
+</html>

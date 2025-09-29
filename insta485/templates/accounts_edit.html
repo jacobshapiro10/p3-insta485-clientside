@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en"> <!--if not logged in then every page should link to login page per spec--> 
+  <head>
+  <title>Insta485</title>
+</head>
+
+<body> <!--images could use fixing of lcoations into var/-->
+{% for i in info %}
+  <h1>Page of {{ i['username'] }} or {{ i['fullname'] }}</h1>
+  <a href="{{ url_for('show_index') }}">Main Page</a>
+  <a href="{{ url_for('show_explore') }}">Go to Explore</a> <!--if logged in then link to explore page--> 
+  <a href="{{ url_for('show_user', username=i['username'])}}">Link to Page of {{ i['username'] }}</a> <!--if logged in then link to profile page--> 
+
+
+
+  <a href="{{url_for('change_password')}}">Change password</a>
+  <a href="{{url_for('delete_account')}}">Delete account</a>
+
+
+
+
+<form action="{{url_for('account_operations')}}?target={{url_for('edit_account')}}" method="post" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="file" name="file" accept="image/*"/>
+  <input type="text" name="fullname" value="{{i['fullname']}}" required/>
+  <input type="text" name="email" value="{{i['email']}}" required/>
+  <input type="submit" name="update" value="submit"/>
+  <input type="hidden" name="operation" value="edit_account"/>
+</form>
+
+
+{% endfor %}
+
+</body>
+</html>

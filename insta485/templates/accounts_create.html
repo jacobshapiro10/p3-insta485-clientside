@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"> <!--if not logged in then every page should link to login page per spec--> 
+  <head>
+  <title>Insta485</title>
+</head>
+
+<body> <!--images could use fixing of locations into var/-->
+  <h1>Main Page</h1>
+  <a href="{{ url_for('show_index') }}">Main Page</a>
+
+<nav>
+<a href="{{url_for('login_get')}}">Login to account</a>
+</nav>
+
+
+ <form action="{{url_for('account_operations')}}?target={{url_for('show_index')}}" method="post" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="file" name="file" required/>
+  <input type="text" name="fullname" required/>
+  <input type="text" name="username" required/>
+  <input type="text" name="email" required/>
+  <input type="password" name="password" required/>
+  <input type="submit" name="signup" value="sign up"/>
+  <input type="hidden" name="operation" value="create"/>
+</form>
+
+<a href="{{url_for('login_get')}}">Login to account</a>
+
+
+
+
+  </body>
+  </html>

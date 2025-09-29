@@ -1,0 +1,106 @@
+<!-- post.html -->
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{post.filename}}</title>
+</head>
+<body>
+<a href="{{ url_for('show_index') }}">Main Page</a>
+<a href="{{ url_for('show_explore') }}">Go to Explore</a> <!--if logged in then link to explore page-->
+<a href="{{ url_for('show_user', username=logname)}}">Link to Page of {{ logname }}</a> <!--if logged in then link to profile page-->
+
+<div class="card my-5 mx-auto" style="max-width: 600px;">
+<!-- Post Header -->
+<div class="card-header bg-white d-flex align-items-center justify-content-between p-3">
+<div class="d-flex align-items-center">
+<a href="{{ url_for('show_user', username=post.owner) }}">
+<img src="{{ url_for('upload_file', filename=post['owner_pic']) }}"
+        alt="{{ post['owner'] }} profile picture"
+        class="profile-pic">
+</a>
+
+<h5 class="mb-0">
+<a href="{{ url_for('show_user', username=post.owner) }}" class="text-decoration-none text-dark fw-bold">
+{{ post.owner }}
+</a>
+</h5>
+
+</div>
+<!-- Post Delete Button (Conditionally displayed) -->
+{% if logname == post.owner %}
+<form action="{{ url_for('update_posts') }}?target={{ url_for('show_user', username=logname) }}" method="post" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="operation" value="delete"/>
+<input type="hidden" name="postid" value="{{ post.postid }}"/>
+<input type="submit" name="delete" value="delete this post" class="btn btn-outline-danger btn-sm"/>
+</form>
+{% endif %}
+</div>
+
+<!-- Post Image -->
+
+<img src="{{ url_for('upload_file', filename=post.filename) }}" class="card-img-top" alt="Post by {{ post.owner }}">
+
+<!-- Post Body (Likes & Comments) -->
+
+<div class="card-body">
+<!-- Like/Unlike Forms -->
+<div class="d-flex align-items-center mb-3">
+{% if is_liked_by_user %}
+<form action="{{ url_for('update_likes') }}?target={{ url_for('show_post', postid=post.postid) }}" method="post" enctype="multipart/form-data" class="d-inline">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="operation" value="unlike"/>
+<input type="hidden" name="postid" value="{{ post.postid }}"/>
+<input type="submit" name="unlike" value="Unlike" class="btn btn-primary"/>
+</form>
+{% else %}
+<form action="{{ url_for('update_likes') }}?target={{ url_for('show_post', postid=post.postid) }}" method="post" enctype="multipart/form-data" class="d-inline">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="operation" value="like"/>
+<input type="hidden" name="postid" value="{{ post.postid }}"/>
+<input type="submit" name="like" value="Like" class="btn btn-outline-primary"/>
+</form>
+{% endif %}
+</div>
+<span class="text-muted">{{ like_count }} likes</span>
+</div>
+
+<!-- Comments Section -->
+<div class="mb-4">
+    {% for comment in comments %}
+    <div class="d-flex align-items-start mb-2">
+        <h6 class="fw-bold me-2 mb-0">
+            <a href="{{ url_for('show_user', username=comment.owner) }}" class="text-dark text-decoration-none">
+                {{ comment.owner }}
+            </a>
+        </h6>
+        <p class="mb-0 me-auto">{{ comment.text }}</p>
+
+        <!-- Comment Delete Button (Conditionally displayed) -->
+        {% if logname == comment.owner %}
+        <form action="{{ url_for('add_comment') }}?target={{ url_for('show_post', postid=post.postid) }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="operation" value="delete"/>
+            <input type="hidden" name="commentid" value="{{ comment.commentid }}"/>
+            <input type="submit" name="uncomment" value="delete" class="btn btn-link text-danger p-0 ms-auto"/>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add Comment Form -->
+<form action="{{ url_for('add_comment') }}?target={{ url_for('show_post', postid=post.postid) }}" method="post" enctype="multipart/form-data" class="mt-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="text" name="text" placeholder="Add a comment..." class="form-control" required/>
+    <input type="hidden" name="operation" value="create"/>
+    <input type="hidden" name="postid" value="{{ post.postid }}"/>
+    <input type="submit" name="comment" value="comment"/>
+</form>
+
+</div>
+
+</body>
+</html>

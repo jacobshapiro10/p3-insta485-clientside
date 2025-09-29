@@ -1,0 +1,14 @@
+#!/bin/bash
+# Run style checks, linting, and tests for the Insta485 project.
+# Stops on errors and prints each command before running it.
+
+set -e  # Stop on first error
+set -x  # Print commands as they run
+
+# Run style and docstring checks
+pycodestyle insta485
+pydocstyle insta485
+pylint insta485
+
+# Run unit tests
+pytest -v tests
