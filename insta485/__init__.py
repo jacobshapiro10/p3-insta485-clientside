@@ -23,6 +23,8 @@ app.config.from_envvar('INSTA485_SETTINGS', silent=True)
 csrf = CSRFProtect()
 csrf.init_app(app)
 
+import insta485.api  # noqa: E402  pylint: disable=wrong-import-position
+
 
 import insta485.model  # noqa: E402  pylint: disable=wrong-import-position
 # Tell our app about views and model.  This is dangerously close to a
