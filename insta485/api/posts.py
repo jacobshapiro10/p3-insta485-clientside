@@ -131,93 +131,52 @@ def show_posts():
     })
 
 
-@insta485.app.route('/api/v1/posts/<int:postid_url_slug>/')
+@insta485.app.route("/api/v1/posts/<int:postid_url_slug>/")
 def get_post(postid_url_slug):
-    """Get a post by ID."""
-    auth = flask.request.authorization
-
-    if auth is None:
-      return flask.jsonify({
-        "message": "Forbidden",
-        "status_code": 403
-      }), 403
-
-    username = auth.username
-    password = auth.password
+    """Return details of a single post, or 404 if not found."""
+    username = check_credentials()
+    if username is None:
+        return flask.jsonify({
+            "message": "Forbidden",
+            "status_code": 403
+        }), 403
 
     connection = insta485.model.get_db()
-    user = connection.execute(
-      "SELECT password FROM users WHERE username = ?", (username,)
+    row = connection.execute(
+        "SELECT * FROM posts WHERE postid = ?", (postid_url_slug,)
     ).fetchone()
 
-    if user is None:
+    if row is None:
         return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-      }), 403
+            "message": "Not Found",
+            "status_code": 404
+        }), 404
 
-    algorithm, salt, stored_hash = user["password"].split("$")
-
-    hash_obj = hashlib.new(algorithm)
-    hash_obj.update((salt + password).encode("utf-8"))
-    computed_hash = hash_obj.hexdigest()
-
-    if computed_hash != stored_hash:
-        return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-        }), 403
-   
     context = {
-      "created": "2017-09-28 04:33:28",
-      "imgUrl": "/uploads/122a7d27ca1d7420a1072f695d9290fad4501a41.jpg",
-      "owner": "awdeorio",
-      "ownerImgUrl": "/uploads/e1a7c5c32973862ee15173b0259e3efdb6a391af.jpg",
-      "ownerShowUrl": "/users/awdeorio/",
-      "postShowUrl": f"/posts/{postid_url_slug}/",
-      "postid": postid_url_slug,
-      "url": flask.request.path,
-  }
+        "created": row["created"],
+        "imgUrl": f"/uploads/{row['filename']}",
+        "owner": row["owner"],
+        # Dummy owner image / show URL since schema doesn’t hold it
+        "ownerImgUrl": "/uploads/e1a7c5c32973862ee15173b0259e3efdb6a391af.jpg",
+        "ownerShowUrl": f"/users/{row['owner']}/",
+        "postShowUrl": f"/posts/{postid_url_slug}/",
+        "postid": row["postid"],
+        "url": flask.request.path,
+    }
     return flask.jsonify(**context)
 
 
 @insta485.app.route('/api/v1/likes/?postid=<postid>/', methods=['POST'])
 def create_like():
-    """Handle lkes on a post."""
-    # Check user is authenticated
-    auth = flask.request.authorization
-
-    if auth is None:
-      return flask.jsonify({
-        "message": "Forbidden",
-        "status_code": 403
-      }), 403
-
-    username = auth.username
-    password = auth.password
+    """Handle likes on a post."""
+    username = check_credentials()
+    if username is None:
+        return flask.jsonify({
+            "message": "Forbidden",
+            "status_code": 403
+        }), 403
 
     db = insta485.model.get_db()
-    user = db.execute(
-      "SELECT password FROM users WHERE username = ?", (username,)
-    ).fetchone()
-
-    if user is None:
-        return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-      }), 403
-
-    algorithm, salt, stored_hash = user["password"].split("$")
-
-    hash_obj = hashlib.new(algorithm)
-    hash_obj.update((salt + password).encode("utf-8"))
-    computed_hash = hash_obj.hexdigest()
-
-    if computed_hash != stored_hash:
-        return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-        }), 403
 
     # Parse postid from query parameter
     postid = flask.request.args.get("postid", type=int)
@@ -257,39 +216,14 @@ def create_like():
 def delete_like():
     """Handle lkes on a post."""
     # Check user is authenticated
-    auth = flask.request.authorization
-
-    if auth is None:
-      return flask.jsonify({
-        "message": "Forbidden",
-        "status_code": 403
-      }), 403
-
-    username = auth.username
-    password = auth.password
+    username = check_credentials()
+    if username is None:
+        return flask.jsonify({
+            "message": "Forbidden",
+            "status_code": 403
+        }), 403
 
     db = insta485.model.get_db()
-    user = db.execute(
-      "SELECT password FROM users WHERE username = ?", (username,)
-    ).fetchone()
-
-    if user is None:
-        return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-      }), 403
-
-    algorithm, salt, stored_hash = user["password"].split("$")
-
-    hash_obj = hashlib.new(algorithm)
-    hash_obj.update((salt + password).encode("utf-8"))
-    computed_hash = hash_obj.hexdigest()
-
-    if computed_hash != stored_hash:
-        return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-        }), 403
 
     # Parse postid from query parameter
     postid = flask.request.args.get("postid", type=int)
