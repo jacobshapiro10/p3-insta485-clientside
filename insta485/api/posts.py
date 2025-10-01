@@ -205,6 +205,11 @@ def get_post(postid_url_slug):
         "numLikes": num_likes,
         "url": f"/api/v1/likes/{user_like['likeid']}/" if user_like else None
     }
+    owner_image = connection.execute(
+        "SELECT filename FROM users WHERE username = ?",
+        (row['owner'],)
+    ).fetchone()
+    image_url = f"/uploads/{owner_image['filename']}"
 
     # --- Build response ---
     context = {
@@ -215,7 +220,7 @@ def get_post(postid_url_slug):
         "likes": likes_obj,
         "owner": row["owner"],
         # "ownerImgUrl": f"/uploads/{row['owner']}.jpg",  # TODO: replace with actual profile filename query if needed
-        "ownerImgUrl": "/uploads/e1a7c5c32973862ee15173b0259e3efdb6a391af.jpg",
+        "ownerImgUrl": image_url,
         "ownerShowUrl": f"/users/{row['owner']}/",
         "postShowUrl": f"/posts/{postid_url_slug}/",
         "postid": row["postid"],
