@@ -284,20 +284,6 @@ def delete_like(like_id):
 
     db = insta485.model.get_db()
 
-    # # Parse postid from query parameter
-    # postid = flask.request.args.get("postid", type=int)
-    # if postid is None:
-    #     return flask.jsonify({"message": "Missing postid"}), 400
-
-    # Make sure post exists
-    # # Post IDs that are out of range should return a 404 error.
-    # post = db.execute(
-    #     "SELECT postid FROM posts WHERE postid=?",
-    #     (postid,)
-    # ).fetchone()
-    # if post is None:
-    #     return flask.jsonify({"message": "Not Found", "status_code": 404}), 404
-
     # If the “like_id” doesn't exists, return 404
     row = db.execute(
         "SELECT likeid FROM likes WHERE likeid=?",
@@ -323,5 +309,99 @@ def delete_like(like_id):
     # Delete one “like” for a specific post. Return 204 on success.
     db.execute(
         "DELETE FROM likes WHERE likeid=?", (like_id,)
+    )
+    return "", 204
+
+
+@insta485.app.route('/api/v1/comments/', methods=['POST'])
+def create_comment():
+    """Handle comments on a post."""
+    username = check_credentials()
+    if username is None:
+        return flask.jsonify({
+            "message": "Forbidden",
+            "status_code": 403
+        }), 403
+
+    db = insta485.model.get_db()
+
+    # Parse postid from query parameter
+    postid = flask.request.args.get("postid", type=int)
+    if postid is None:
+        return flask.jsonify({"message": "Missing postid"}), 400
+
+    # Make sure post exists
+    # Post IDs that are out of range should return a 404 error.
+    post = db.execute(
+        "SELECT postid FROM posts WHERE postid=?",
+        (postid,)
+    ).fetchone()
+    if post is None:
+        return flask.jsonify({"message": "Not Found", "status_code": 404}), 404
+
+    # Get comment text from JSON body
+    body = flask.request.get_json(silent=True)
+    if not body or "text" not in body:
+        return flask.jsonify({
+            "message": "Missing text field",
+            "status_code": 400
+        }), 400
+    text = body["text"].strip()
+    if not text:
+        return flask.jsonify({
+            "message": "Empty comment not allowed",
+            "status_code": 400
+        }), 400
+    
+    # Create one comment for a specific post. Return 201 on success.
+    db.execute(
+        "INSERT INTO comments(owner, postid, text) VALUES (?, ?, ?)",
+        (username, postid, text)
+    )
+    commentid = db.execute(
+        "SELECT last_insert_rowid() AS lid"
+    ).fetchone()["lid"]
+    return flask.jsonify({"commentid": commentid, "url": f"/api/v1/comments/{commentid}/"}), 201
+
+
+
+@insta485.app.route('/api/v1/comments/<int:comment_id>/', methods=['DELETE'])
+def delete_comment(comment_id):
+    """Handle lkes on a post."""
+    # Check user is authenticated
+    username = check_credentials()
+    if username is None:
+        return flask.jsonify({
+            "message": "Forbidden",
+            "status_code": 403
+        }), 403
+
+    db = insta485.model.get_db()
+
+    # If the “comment_id” doesn't exists, return 404
+    row = db.execute(
+        "SELECT commentid FROM comments WHERE commentid=?",
+        (comment_id,)
+    ).fetchone()
+    if not row:
+        return flask.jsonify({
+            "message": "commentid Not Found",
+            "status_code": 404
+        }), 404
+
+    # If the user does not own the "comments" return 403
+    row = db.execute(
+        "SELECT commentid FROM comments WHERE commentid=? AND owner=?",
+        (comment_id, username)
+    ).fetchone()
+    if not row:
+        return flask.jsonify({
+            "message": "User does not own commentid",
+            "status_code": 403
+        }), 403
+
+    # Delete one “comments” for a specific post. Return 204 on success.
+    db.execute(
+        "DELETE FROM comments WHERE commentid=?", (comment_id,)
     )
     return "", 204
