@@ -164,3 +164,96 @@ def get_post(postid_url_slug):
         "url": flask.request.path,
     }
     return flask.jsonify(**context)
+
+
+@insta485.app.route('/api/v1/likes/?postid=<postid>/', methods=['POST'])
+def create_like():
+    """Handle likes on a post."""
+    username = check_credentials()
+    if username is None:
+        return flask.jsonify({
+            "message": "Forbidden",
+            "status_code": 403
+        }), 403
+
+    db = insta485.model.get_db()
+
+    # Parse postid from query parameter
+    postid = flask.request.args.get("postid", type=int)
+    if postid is None:
+        return flask.jsonify({"message": "Missing postid"}), 400
+
+    # Make sure post exists
+    # Post IDs that are out of range should return a 404 error.
+    post = db.execute(
+        "SELECT postid FROM posts WHERE postid=?",
+        (postid,)
+    ).fetchone()
+    if post is None:
+        return flask.jsonify({"message": "Not Found", "status_code": 404}), 404
+
+    # If the “like” already exists, return the like object with a 200 response
+    row = db.execute(
+        "SELECT likeid FROM likes WHERE postid=? AND owner=?",
+        (postid, flask.g.user)
+    ).fetchone()
+    if row:
+        return flask.jsonify({"likeid": row["likeid"], 
+          "url": f"/api/v1/likes/{row['likeid']}/"}), 200
+
+    # Create one “like” for a specific post. Return 201 on success.
+    db.execute(
+        "INSERT INTO likes(owner, postid) VALUES (?, ?)",
+        (flask.g.user, postid)
+    )
+    likeid = db.execute(
+        "SELECT last_insert_rowid() AS lid"
+    ).fetchone()["lid"]
+    return flask.jsonify({"likeid": likeid, "url": f"/api/v1/likes/{likeid}/"}), 201
+
+
+@insta485.app.route('/api/v1/likes/?postid=<postid>/', methods=['POST'])
+def delete_like():
+    """Handle lkes on a post."""
+    # Check user is authenticated
+    username = check_credentials()
+    if username is None:
+        return flask.jsonify({
+            "message": "Forbidden",
+            "status_code": 403
+        }), 403
+
+    db = insta485.model.get_db()
+
+    # Parse postid from query parameter
+    postid = flask.request.args.get("postid", type=int)
+    if postid is None:
+        return flask.jsonify({"message": "Missing postid"}), 400
+
+    # Make sure post exists
+    # Post IDs that are out of range should return a 404 error.
+    post = db.execute(
+        "SELECT postid FROM posts WHERE postid=?",
+        (postid,)
+    ).fetchone()
+    if post is None:
+        return flask.jsonify({"message": "Not Found", "status_code": 404}), 404
+
+    # If the “like” already exists, return the like object with a 200 response
+    row = db.execute(
+        "SELECT likeid FROM likes WHERE postid=? AND owner=?",
+        (postid, flask.g.user)
+    ).fetchone()
+    if row:
+        return flask.jsonify({"likeid": row["likeid"], 
+          "url": f"/api/v1/likes/{row['likeid']}/"}), 200
+
+    # Create one “like” for a specific post. Return 201 on success.
+    db.execute(
+        "INSERT INTO likes(owner, postid) VALUES (?, ?)",
+        (flask.g.user, postid)
+    )
+    likeid = db.execute(
+        "SELECT last_insert_rowid() AS lid"
+    ).fetchone()["lid"]
+    return flask.jsonify({"likeid": likeid, "url": f"/api/v1/likes/{likeid}/"}), 201
