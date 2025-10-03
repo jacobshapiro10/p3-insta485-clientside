@@ -10,6 +10,43 @@
   <a href="{{ url_for('show_explore') }}">Go to Explore</a> <!--if logged in then link to explore page--> 
   <a href="{{ url_for('show_user', username=logname)}}">Link to Page of {{ logname }}</a> <!--if logged in then link to profile page--> 
   
+  {% for followee in following %}
+    <div class="username">
+        <p>
+            <a href="{{ url_for('show_user', username=followee['username'])}}">
+        {{ followee['username'] }}</a>
+
+        </p>
+    </div>
+    <div class="icon">
+        <img src="{{ url_for('upload_file', filename=followee['user_pic']) }}" alt="{{ followee['username'] }} profile picture">
+    </div>
+
+    <div class="follow_info">
+        {% if followee['relationship'] == "not_following" %}
+            <p>not following</p>
+            <form action="{{ url_for('update_following') }}?target={{ url_for('show_user_following', username=username) }}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="submit" name="follow" value="follow"/>
+                <input type="hidden" name="username" value="{{ followee['username'] }}"/>
+                <input type="hidden" name="operation" value="follow"/>
+            </form>
+    
+    {% elif followee['relationship'] == "following" %}
+        <p> following</p>
+        <form action="{{ url_for('update_following') }}?target={{ url_for('show_user_following', username=username) }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="submit" name="unfollow" value="unfollow"/>
+            <input type="hidden" name="username" value="{{ followee['username'] }}"/>
+            <input type="hidden" name="operation" value="unfollow"/>
+        </form>
+    {% endif %}
+
+
+    </div>
+
+  {% endfor %}
+
   </body>
 </html>
 
