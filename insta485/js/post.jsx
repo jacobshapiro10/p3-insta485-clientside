@@ -5,8 +5,12 @@ import React, { useState, useEffect } from "react";
 export default function Post({ url }) {
   /* Display image and post owner of a single post */
 
-  const [imgUrl, setImgUrl] = useState("");
-  const [owner, setOwner] = useState("");
+const [imgUrl, setImgUrl] = useState("");       // string
+const [owner, setOwner] = useState("");         // string
+const [comments, setComments] = useState([]);   // array (starts empty)
+const [created, setCreated] = useState("");     // string
+const [likes, setLikes] = useState([]);
+
 
   useEffect(() => {
     // Declare a boolean flag that we can use to cancel the API request.

@@ -10,28 +10,7 @@
   <a href="{{ url_for('show_explore') }}">Go to Explore</a> <!--if logged in then link to explore page--> 
   <a href="{{ url_for('show_user', username=logname)}}">Link to Page of {{ logname }}</a> <!--if logged in then link to profile page--> 
 
-    {% for info in user_info %}
-      <img src="{{ url_for('upload_file', filename=info['filename']) }}"
-        alt="{{ info['username'] }} profile picture">
-        <p>
-          <a href="{{ url_for('show_user', username=info['username'])}}">Link to Page of {{ info['username'] }}</a>
-        </p>
-
-        <form action="{{ url_for('update_following') }}?target={{ url_for('show_explore') }}" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="submit" name="follow" value="follow"/>
-            <input type="hidden" name="username" value="{{ info['username'] }}"/>
-            <input type="hidden" name="operation" value="follow"/>
-        </form>
-
-        
-
-
-
-
-
-    {% endfor %}
-
+    
 
 
 
