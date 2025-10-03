@@ -1,23 +1,27 @@
 <!DOCTYPE html>
-<html lang="en"> <!--if not logged in then every page should link to login page per spec--> 
+<html lang="en"> 
   <head>
-  <title>Insta485</title>
-</head>
+    <meta charset="utf-8" />
+    <title>Insta485</title>
+  </head>
 
-<body> <!--images could use fixing of lcoations into var/-->
-  <nav>
-    <h1>Main Page</h1>
-    <a href="{{ url_for('show_index') }}">Main Page</a>
-    <a href="{{ url_for('show_explore') }}">Go to Explore</a> <!--if logged in then link to explore page--> 
-    <a href="{{ url_for('show_user', username=logname)}}">Link to Page of {{ logname }}</a> <!--if logged in then link to profile page--> 
-  </nav>
-  
+  <body>
+    <!-- Navigation bar (keep this) -->
+    <nav>
+      <h1>Main Page</h1>
+      <a href="{{ url_for('show_index') }}">Main Page</a>
+      <a href="{{ url_for('show_explore') }}">Explore</a>
+      <a href="{{ url_for('show_user', username=logname) }}">
+        Profile ({{ logname }})
+      </a>
+    </nav>
 
-  <div id="reactEntry">
-    Loading ...
-  </div>
-  <!-- Load JavaScript -->
-  <script src="{{ url_for('static', filename='js/bundle.js') }}"></script>
-</body>
+    <!-- React will render the feed here -->
+    <div id="reactEntry">
+      Loading ...
+    </div>
+
+    <!-- Load the bundled React app -->
+    <script src="{{ url_for('static', filename='js/bundle.js') }}"></script>
+  </body>
 </html>
-
