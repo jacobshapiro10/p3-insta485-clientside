@@ -9,7 +9,7 @@ const [imgUrl, setImgUrl] = useState("");       // string
 const [owner, setOwner] = useState("");         // string
 const [comments, setComments] = useState([]);   // array (starts empty)
 const [created, setCreated] = useState("");     // string
-const [likes, setLikes] = useState([]);
+const [likes, setLikes] = useState({});
 
 
   useEffect(() => {
