@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
+
 
 // The parameter of this function is an object with a string called url inside it.
 // url is a prop for the Post component.
@@ -9,42 +16,64 @@ const [imgUrl, setImgUrl] = useState("");       // string
 const [owner, setOwner] = useState("");         // string
 const [comments, setComments] = useState([]);   // array (starts empty)
 const [created, setCreated] = useState("");     // string
-const [likes, setLikes] = useState({});
+const [ownerImgUrl, setOwnerImgUrl] = useState("");
+const [ownerShowUrl, setOwnerShowUrl] = useState("");
+const [likes, setLikes] = useState({ numLikes: 0, lognameLikesThis: false, url: null });
 
 
   useEffect(() => {
-    // Declare a boolean flag that we can use to cancel the API request.
-    let ignoreStaleRequest = false;
-
-    // Call REST API to get the post's information
     fetch(url, { credentials: "same-origin" })
-      .then((response) => {
-        if (!response.ok) throw Error(response.statusText);
-        return response.json();
-      })
-      .then((data) => {
-        // If ignoreStaleRequest was set to true, we want to ignore the results of the
-        // the request. Otherwise, update the state to trigger a new render.
-        if (!ignoreStaleRequest) {
-          setImgUrl(data.imgUrl);
-          setOwner(data.owner);
-        }
-      })
-      .catch((error) => console.log(error));
-
-    return () => {
-      // This is a cleanup function that runs whenever the Post component
-      // unmounts or re-renders. If a Post is about to unmount or re-render, we
-      // should avoid updating state.
-      ignoreStaleRequest = true;
-    };
+      .then(res => res.json())
+      .then(data => {
+        setOwner(data.owner);
+        setOwnerImgUrl(data.ownerImgUrl);
+        setOwnerShowUrl(data.ownerShowUrl);
+        setImgUrl(data.imgUrl);
+        setCreated(data.created);
+        setLikes(data.likes);
+        setComments(data.comments);
+      });
   }, [url]);
 
-  // Render post image and post owner
-  return (
+
+
+ return (
     <div className="post">
-      <img src={imgUrl} alt="post_image" />
-      <p>{owner}</p>
+      {/* Owner info */}
+      <a href={ownerShowUrl}>
+        <img src={ownerImgUrl} alt="profile pic" width="40" />
+        <span>{owner}</span>
+      </a>
+
+      {/* Post image */}
+      <img src={imgUrl} alt="post" width="500" />
+
+      {/* Created timestamp */}
+      <p>{dayjs.utc(created).local().fromNow()}</p>
+
+      {/* Likes */}
+      <button data-testid="like-unlike-button">
+        {likes.lognameLikesThis ? "Unlike" : "Like"}
+      </button>
+      <p>{likes.numLikes} likes</p>
+
+      {/* Comments */}
+      <div>
+        {comments.map(c => (
+          <div key={c.commentid}>
+            <a href={c.ownerShowUrl}>{c.owner}</a>:{" "}
+            <span data-testid="comment-text">{c.text}</span>
+            {c.lognameOwnsThis && (
+              <button data-testid="delete-comment-button">Delete</button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* New comment form */}
+      <form data-testid="comment-form">
+        <input type="text" placeholder="Add a comment..." />
+      </form>
     </div>
   );
 }
