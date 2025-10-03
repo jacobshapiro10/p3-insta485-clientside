@@ -369,7 +369,6 @@ def create_comment():
     return flask.jsonify({"commentid": commentid, "url": f"/api/v1/comments/{commentid}/"}), 201
 
 
-
 @insta485.app.route('/api/v1/comments/<int:comment_id>/', methods=['DELETE'])
 def delete_comment(comment_id):
     """Handle lkes on a post."""
