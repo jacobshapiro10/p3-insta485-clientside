@@ -6,18 +6,18 @@ import Timestamp from "./timestamp";
 export default function Post({ url }) {
   /* Display image and post owner of a single post */
 
-  const [imgUrl, setImgUrl] = useState(""); // string
+  const [imgUrl, setImgUrl] = useState(null); // string
   const [owner, setOwner] = useState(""); // string
   const [comments, setComments] = useState([]); // array (starts empty)
   const [created, setCreated] = useState(""); // string
-  const [ownerImgUrl, setOwnerImgUrl] = useState("");
+  const [ownerImgUrl, setOwnerImgUrl] = useState(null);
   const [ownerShowUrl, setOwnerShowUrl] = useState("");
   const [likes, setLikes] = useState({
     numLikes: 0,
     lognameLikesThis: false,
     url: null,
   });
-  const [postId, setPostId] = useState(0);
+  const [postId, setPostId] = useState(null);
   const [commentText, setCommentText] = useState("");
 
   useEffect(() => {
@@ -138,15 +138,20 @@ export default function Post({ url }) {
         width="500"
         onDoubleClick={handleDoubleClickToLike}
       />
+      
 
       {/* Created timestamp */}
+      <a href={`/posts/${postId}/`}>
       <Timestamp created={created} />
+      </a>
 
       {/* Likes */}
-      <button data-testid="like-unlike-button" onClick={handleLikeClick}>
+      <button data-testid="like-unlike-button" onClick={handleLikeClick} disabled = {!postId || (likes.lognameLikesThis && !likes.url)}>
         {likes.lognameLikesThis ? "Unlike" : "Like"}
       </button>
-      <p>{likes.numLikes} likes</p>
+      <p>
+  {likes.numLikes} {likes.numLikes === 1 ? "like" : "likes"}
+</p>
 
       {/* Comments */}
       <div>
@@ -173,6 +178,7 @@ export default function Post({ url }) {
           placeholder="Add a comment..."
           value={commentText}
           onChange={(e) => setCommentText(e.target.value)}
+          disabled={!postId}
         />
       </form>
     </div>
