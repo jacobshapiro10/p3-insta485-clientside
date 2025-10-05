@@ -14,6 +14,8 @@ export default function Post({ url }) {
   const [ownerShowUrl, setOwnerShowUrl] = useState("");
   const [likes, setLikes] = useState({ numLikes: 0, lognameLikesThis: false, url: null });
   const [postId, setPostId] = useState(0);
+  const [commentText, setCommentText] = useState("");
+  
 
 
   useEffect(() => {
@@ -32,12 +34,44 @@ export default function Post({ url }) {
   }, [url]);
 
 
-  function handleCommentAdd() {
-    fetch
-
+  function handleCommentAdd(e) {
+     e.preventDefault();
+    fetch(`/api/v1/comments/?postid=${postId}`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+      "Content-Type": "application/json",
+    },
+      body: JSON.stringify({ text: commentText }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      setComments([
+        ...comments,
+        {
+          commentid: data.commentid,
+          lognameOwnsThis: true,
+          owner: window.CURRENT_USER,
+          ownerShowUrl: `/users/${window.CURRENT_USER}/`,
+          text: commentText,
+          url: data.url,
+        },
+        
+      ]);
+setCommentText("");
+    }
+  )
   }
 
-  function handleCommentDelete() {
+  function handleCommentDelete(commentId) {
+    fetch(`/api/v1/comments/${commentId}/`, {
+    method: "DELETE",
+    credentials: "same-origin"
+  })
+  .then(() => {
+    // Remove it from state so UI updates immediately
+    setComments(comments.filter(c => c.commentid !== commentId));
+  });
 
   }
 
@@ -118,21 +152,32 @@ export default function Post({ url }) {
 
       {/* Comments */}
       <div>
-        {comments.map(c => (
-          <div key={c.commentid}>
-            <a href={c.ownerShowUrl}>{c.owner}</a>:{" "}
-            <span data-testid="comment-text">{c.text}</span>
-            {c.lognameOwnsThis && (
-              <button data-testid="delete-comment-button">Delete</button>
-            )}
-          </div>
-        ))}
+       {comments.map(c => (
+  <div key={c.commentid}>
+    <a href={c.ownerShowUrl}>{c.owner}</a>:{" "}
+    <span data-testid="comment-text">{c.text}</span>
+    {c.lognameOwnsThis && (
+      <button
+        data-testid="delete-comment-button"
+        onClick={() => handleCommentDelete(c.commentid)}
+      >
+        Delete
+      </button>
+    )}
+  </div>
+))}
+
       </div>
 
       {/* New comment form */}
-      <form data-testid="comment-form">
-        <input type="text" placeholder="Add a comment..." />
-      </form>
+<form data-testid="comment-form" onSubmit={handleCommentAdd}>
+  <input
+    type="text"
+    placeholder="Add a comment..."
+    value={commentText}
+    onChange={(e) => setCommentText(e.target.value)}
+  />
+</form>
     </div>
   );
 }
