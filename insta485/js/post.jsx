@@ -31,6 +31,16 @@ export default function Post({ url }) {
       });
   }, [url]);
 
+
+  function handleCommentAdd() {
+    fetch
+
+  }
+
+  function handleCommentDelete() {
+
+  }
+
   function handleLikeClick() {
   if (likes.lognameLikesThis) {
     // Unlike: DELETE the existing like
