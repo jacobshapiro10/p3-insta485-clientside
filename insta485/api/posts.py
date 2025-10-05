@@ -1,8 +1,10 @@
 """REST API for posts."""
-import flask
-import insta485
 import hashlib
 from urllib.parse import urlencode
+
+import flask
+
+import insta485
 
 
 def check_credentials():
@@ -37,7 +39,7 @@ def check_credentials():
 
 @insta485.app.route("/api/v1/")
 def get_api_root():
-    """API root resource listing."""
+    """List API root resource."""
     context = {
         "comments": "/api/v1/comments/",
         "likes": "/api/v1/likes/",
@@ -59,20 +61,21 @@ def show_posts():
         }), 403
 
     # Parse query params
-    origN = flask.request.args.get("postid_lte", type=int)
-    origSize = flask.request.args.get("size", type=int)
-    origPage = flask.request.args.get("page", type=int)
+    orig_n = flask.request.args.get("postid_lte", type=int)
+    orig_size = flask.request.args.get("size", type=int)
+    orig_page = flask.request.args.get("page", type=int)
 
     # Defaults
-    size = origSize if origSize is not None else 10
-    page = origPage if origPage is not None else 0
-    if origN is None:
-        row = connection.execute("SELECT MAX(postid) AS max_id FROM posts").fetchone()
-        N = row["max_id"]
+    size = orig_size if orig_size is not None else 10
+    page = orig_page if orig_page is not None else 0
+    if orig_n is None:
+        row = connection.execute(
+            "SELECT MAX(postid) AS max_id FROM posts"
+        ).fetchone()
+        max_row = row["max_id"]
     else:
-        N = origN
+        max_row = orig_n
 
- 
     if size <= 0 or page < 0:
         return flask.jsonify({
             "message": "Bad Request",
@@ -97,7 +100,7 @@ def show_posts():
         ORDER BY p.postid DESC
         LIMIT ? OFFSET ?
         """,
-        (username, username, N, size, size * page)
+        (username, username, max_row, size, size * page)
     ).fetchall()
 
     posts = [
@@ -106,23 +109,22 @@ def show_posts():
     ]
 
     params = {}
-    if origSize is not None:
-      params["size"] = origSize
-    if origPage is not None:
-      params["page"] = origPage
-    if origN is not None:
-      params["postid_lte"] = origN
-    
-    
+    if orig_size is not None:
+        params["size"] = orig_size
+    if orig_page is not None:
+        params["page"] = orig_page
+    if orig_n is not None:
+        params["postid_lte"] = orig_n
+
     url = "/api/v1/posts/"
     if params:
         url += "?" + urlencode(params)
 
-   
     next_url = ""
     if len(posts) == size:
-      last_seen_postid = posts[0]["postid"]
-      next_url = f"/api/v1/posts/?size={size}&page={page+1}&postid_lte={last_seen_postid}"
+        last_seen_postid = posts[0]["postid"]
+        next_url = f"/api/v1/posts/?size={size}&page={page+1}"
+        next_url = next_url+f"&postid_lte={last_seen_postid}"
 
     return flask.jsonify({
         "next": next_url,
@@ -151,19 +153,6 @@ def get_post(postid_url_slug):
             "message": "Not Found",
             "status_code": 404
         }), 404
-
-    # context = {
-    #     "created": row["created"],
-    #     "imgUrl": f"/uploads/{row['filename']}",
-    #     "owner": row["owner"],
-    #     # Dummy owner image / show URL since schema doesn’t hold it
-    #     "ownerImgUrl": "/uploads/e1a7c5c32973862ee15173b0259e3efdb6a391af.jpg",
-    #     "ownerShowUrl": f"/users/{row['owner']}/",
-    #     "postShowUrl": f"/posts/{postid_url_slug}/",
-    #     "postid": row["postid"],
-    #     "url": flask.request.path,
-    # }
-    # return flask.jsonify(**context)
 
         # --- Fetch comments ---
     comments = connection.execute(
@@ -219,7 +208,6 @@ def get_post(postid_url_slug):
         "imgUrl": f"/uploads/{row['filename']}",
         "likes": likes_obj,
         "owner": row["owner"],
-        # "ownerImgUrl": f"/uploads/{row['owner']}.jpg",  # TODO: replace with actual profile filename query if needed
         "ownerImgUrl": image_url,
         "ownerShowUrl": f"/users/{row['owner']}/",
         "postShowUrl": f"/posts/{postid_url_slug}/",
@@ -262,8 +250,9 @@ def create_like():
         (postid, username)
     ).fetchone()
     if row:
-        return flask.jsonify({"likeid": row["likeid"], 
-          "url": f"/api/v1/likes/{row['likeid']}/"}), 200
+        return flask.jsonify(
+            {"likeid": row["likeid"], "url": f"/api/v1/likes/{row['likeid']}/"}
+        ), 200
 
     # Create one “like” for a specific post. Return 201 on success.
     db.execute(
@@ -273,7 +262,9 @@ def create_like():
     likeid = db.execute(
         "SELECT last_insert_rowid() AS lid"
     ).fetchone()["lid"]
-    return flask.jsonify({"likeid": likeid, "url": f"/api/v1/likes/{likeid}/"}), 201
+    return flask.jsonify(
+        {"likeid": likeid, "url": f"/api/v1/likes/{likeid}/"}
+    ), 201
 
 
 @insta485.app.route('/api/v1/likes/<int:like_id>/', methods=['DELETE'])
@@ -357,7 +348,7 @@ def create_comment():
             "message": "Empty comment not allowed",
             "status_code": 400
         }), 400
-    
+
     # Create one comment for a specific post. Return 201 on success.
     db.execute(
         "INSERT INTO comments(owner, postid, text) VALUES (?, ?, ?)",
@@ -366,7 +357,9 @@ def create_comment():
     commentid = db.execute(
         "SELECT last_insert_rowid() AS lid"
     ).fetchone()["lid"]
-    return flask.jsonify({"commentid": commentid, "url": f"/api/v1/comments/{commentid}/"}), 201
+    return flask.jsonify(
+        {"commentid": commentid, "url": f"/api/v1/comments/{commentid}/"}
+    ), 201
 
 
 @insta485.app.route('/api/v1/comments/<int:comment_id>/', methods=['DELETE'])
