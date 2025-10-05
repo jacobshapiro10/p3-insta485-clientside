@@ -13,12 +13,14 @@ export default function Post({ url }) {
   const [ownerImgUrl, setOwnerImgUrl] = useState("");
   const [ownerShowUrl, setOwnerShowUrl] = useState("");
   const [likes, setLikes] = useState({ numLikes: 0, lognameLikesThis: false, url: null });
+  const [postId, setPostId] = useState(0);
 
 
   useEffect(() => {
     fetch(url, { credentials: "same-origin" })
       .then(res => res.json())
       .then(data => {
+        setPostId(data.postid)
         setOwner(data.owner);
         setOwnerImgUrl(data.ownerImgUrl);
         setOwnerShowUrl(data.ownerShowUrl);
@@ -28,6 +30,40 @@ export default function Post({ url }) {
         setComments(data.comments);
       });
   }, [url]);
+
+  function handleLikeClick() {
+  if (likes.lognameLikesThis) {
+    // Unlike: DELETE the existing like
+    fetch(likes.url, {
+      method: "DELETE",
+      credentials: "same-origin"
+    })
+    .then(() => {
+      setLikes({
+        ...likes,
+        numLikes: likes.numLikes - 1,
+        lognameLikesThis: false,
+        url: null
+      });
+    });
+  } else {
+    // Like: POST a new like
+    fetch(`/api/v1/likes/?postid=${postId}`, {
+      method: "POST",
+      credentials: "same-origin",
+    })
+    .then(res => res.json())
+    .then(data => {
+      setLikes({
+        ...likes,
+        numLikes: likes.numLikes + 1,
+        lognameLikesThis: true,
+        url: data.url
+      });
+    });
+  }
+}
+
 
  return (
     <div className="post">
@@ -45,7 +81,7 @@ export default function Post({ url }) {
       <Timestamp created={created} />
 
       {/* Likes */}
-      <button data-testid="like-unlike-button">
+      <button data-testid="like-unlike-button" onClick={(handleLikeClick)}>
         {likes.lognameLikesThis ? "Unlike" : "Like"}
       </button>
       <p>{likes.numLikes} likes</p>
