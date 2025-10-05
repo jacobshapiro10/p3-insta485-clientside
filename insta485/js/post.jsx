@@ -42,37 +42,57 @@ export default function Post({ url }) {
   }
 
   function handleLikeClick() {
-  if (likes.lognameLikesThis) {
-    // Unlike: DELETE the existing like
-    fetch(likes.url, {
-      method: "DELETE",
-      credentials: "same-origin"
-    })
-    .then(() => {
-      setLikes({
-        ...likes,
-        numLikes: likes.numLikes - 1,
-        lognameLikesThis: false,
-        url: null
+    if (likes.lognameLikesThis) {
+      // Unlike: DELETE the existing like
+      fetch(likes.url, {
+        method: "DELETE",
+        credentials: "same-origin"
+      })
+      .then(() => {
+        setLikes({
+          ...likes,
+          numLikes: likes.numLikes - 1,
+          lognameLikesThis: false,
+          url: null
+        });
       });
-    });
-  } else {
-    // Like: POST a new like
-    fetch(`/api/v1/likes/?postid=${postId}`, {
-      method: "POST",
-      credentials: "same-origin",
-    })
-    .then(res => res.json())
-    .then(data => {
-      setLikes({
-        ...likes,
-        numLikes: likes.numLikes + 1,
-        lognameLikesThis: true,
-        url: data.url
+    } else {
+      // Like: POST a new like
+      fetch(`/api/v1/likes/?postid=${postId}`, {
+        method: "POST",
+        credentials: "same-origin",
+      })
+      .then(res => res.json())
+      .then(data => {
+        setLikes({
+          ...likes,
+          numLikes: likes.numLikes + 1,
+          lognameLikesThis: true,
+          url: data.url
+        });
       });
-    });
+    }
   }
-}
+
+
+  const handleDoubleClickToLike = () =>{
+    // Like: POST a new like
+    if (!likes.lognameLikesThis) {
+      fetch(`/api/v1/likes/?postid=${postId}`, {
+        method: "POST",
+        credentials: "same-origin",
+      })
+      .then(res => res.json())
+      .then(data => {
+        setLikes({
+          ...likes,
+          numLikes: likes.numLikes + 1,
+          lognameLikesThis: true,
+          url: data.url
+        });
+      });
+    }
+  }
 
 
  return (
@@ -84,7 +104,7 @@ export default function Post({ url }) {
       </a>
 
       {/* Post image */}
-      <img src={imgUrl} alt="post" width="500" />
+      <img src={imgUrl} alt="post" width="500" onDoubleClick={handleDoubleClickToLike}/>
       
 
       {/* Created timestamp */}
