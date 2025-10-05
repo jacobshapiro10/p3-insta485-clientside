@@ -21,6 +21,10 @@
       Loading ...
     </div>
 
+     <script>
+      window.CURRENT_USER = "{{ logname }}";
+    </script>
+
     <!-- Load the bundled React app -->
     <script src="{{ url_for('static', filename='js/bundle.js') }}"></script>
   </body>
