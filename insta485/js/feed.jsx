@@ -28,18 +28,21 @@ export default function Feed() {
   }, []);
 
   // Use useCallback to memoize loadMore
-  const loadMore = useCallback((url) => {
-    if (!url || loading) return;
-    setLoading(true);
-    fetch(url, { credentials: "same-origin" })
-      .then((res) => res.json())
-      .then((data) => {
-        setPosts((prevPosts) => [...prevPosts, ...data.results]);
-        setNext(data.next);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [loading]);
+  const loadMore = useCallback(
+    (url) => {
+      if (!url || loading) return;
+      setLoading(true);
+      fetch(url, { credentials: "same-origin" })
+        .then((res) => res.json())
+        .then((data) => {
+          setPosts((prevPosts) => [...prevPosts, ...data.results]);
+          setNext(data.next);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    },
+    [loading],
+  );
 
   // Infinite scroll effect
   useEffect(() => {

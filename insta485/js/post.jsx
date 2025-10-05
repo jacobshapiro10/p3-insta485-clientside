@@ -138,20 +138,23 @@ export default function Post({ url }) {
         width="500"
         onDoubleClick={handleDoubleClickToLike}
       />
-      
 
       {/* Created timestamp */}
       <a href={`/posts/${postId}/`}>
-      <Timestamp created={created} />
+        <Timestamp created={created} />
       </a>
 
       {/* Likes */}
-      <button data-testid="like-unlike-button" onClick={handleLikeClick} disabled = {!postId || (likes.lognameLikesThis && !likes.url)}>
+      <button
+        data-testid="like-unlike-button"
+        onClick={handleLikeClick}
+        disabled={!postId || (likes.lognameLikesThis && !likes.url)}
+      >
         {likes.lognameLikesThis ? "Unlike" : "Like"}
       </button>
       <p>
-  {likes.numLikes} {likes.numLikes === 1 ? "like" : "likes"}
-</p>
+        {likes.numLikes} {likes.numLikes === 1 ? "like" : "likes"}
+      </p>
 
       {/* Comments */}
       <div>
