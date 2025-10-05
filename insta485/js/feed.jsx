@@ -49,7 +49,6 @@
 //   );
 // }
 
-
 import React, { useState, useEffect } from "react";
 import Post from "./post";
 
@@ -60,8 +59,8 @@ export default function Feed() {
 
   // 1️⃣ Scroll to top when component mounts
   useEffect(() => {
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
     }
     window.scrollTo(0, 0);
   }, []); // empty array → only runs once on mount
@@ -99,7 +98,8 @@ export default function Feed() {
   useEffect(() => {
     const handleScroll = () => {
       if (
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
+        window.innerHeight + window.scrollY >=
+          document.body.offsetHeight - 500 &&
         !loading &&
         next
       ) {

@@ -7,13 +7,15 @@ dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
 export default function Timestamp({ created }) {
-    const [displayTime, setDisplayTime] = useState(dayjs.utc(created).local().fromNow());
-    useEffect(() => {
-        const interval = setInterval(() => {
-        setDisplayTime(dayjs.utc(created).local().fromNow());
-        }, 60000);
-        return () => clearInterval(interval);
-    }, [created]);
-    
-    return <p>{displayTime}</p>;
+  const [displayTime, setDisplayTime] = useState(
+    dayjs.utc(created).local().fromNow(),
+  );
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDisplayTime(dayjs.utc(created).local().fromNow());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [created]);
+
+  return <p>{displayTime}</p>;
 }

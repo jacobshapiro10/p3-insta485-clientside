@@ -9,5 +9,5 @@ const root = createRoot(document.getElementById("reactEntry"));
 root.render(
   <StrictMode>
     <Feed />
-  </StrictMode>
+  </StrictMode>,
 );
