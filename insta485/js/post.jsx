@@ -1,24 +1,18 @@
 import React, { useState, useEffect } from "react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(relativeTime);
-dayjs.extend(utc);
-
+import Timestamp from "./timestamp";
 
 // The parameter of this function is an object with a string called url inside it.
 // url is a prop for the Post component.
 export default function Post({ url }) {
   /* Display image and post owner of a single post */
 
-const [imgUrl, setImgUrl] = useState("");       // string
-const [owner, setOwner] = useState("");         // string
-const [comments, setComments] = useState([]);   // array (starts empty)
-const [created, setCreated] = useState("");     // string
-const [ownerImgUrl, setOwnerImgUrl] = useState("");
-const [ownerShowUrl, setOwnerShowUrl] = useState("");
-const [likes, setLikes] = useState({ numLikes: 0, lognameLikesThis: false, url: null });
+  const [imgUrl, setImgUrl] = useState("");       // string
+  const [owner, setOwner] = useState("");         // string
+  const [comments, setComments] = useState([]);   // array (starts empty)
+  const [created, setCreated] = useState("");     // string
+  const [ownerImgUrl, setOwnerImgUrl] = useState("");
+  const [ownerShowUrl, setOwnerShowUrl] = useState("");
+  const [likes, setLikes] = useState({ numLikes: 0, lognameLikesThis: false, url: null });
 
 
   useEffect(() => {
@@ -35,8 +29,6 @@ const [likes, setLikes] = useState({ numLikes: 0, lognameLikesThis: false, url: 
       });
   }, [url]);
 
-
-
  return (
     <div className="post">
       {/* Owner info */}
@@ -47,9 +39,10 @@ const [likes, setLikes] = useState({ numLikes: 0, lognameLikesThis: false, url: 
 
       {/* Post image */}
       <img src={imgUrl} alt="post" width="500" />
+      
 
       {/* Created timestamp */}
-      <p>{dayjs.utc(created).local().fromNow()}</p>
+      <Timestamp created={created} />
 
       {/* Likes */}
       <button data-testid="like-unlike-button">
