@@ -10,19 +10,29 @@ export default function Timestamp({ created }) {
   const [displayTime, setDisplayTime] = useState("");
 
   useEffect(() => {
+    // add a guard clause to avoid setting up interval
+    // if created is null or undefined
+    if (!created) return;
+
     // Set immediately
     setDisplayTime(dayjs.utc(created).local().fromNow());
 
+    let interval = null;
+
     // Small timeout ensures interval registers *after* Cypress clock starts
     const startTimer = setTimeout(() => {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setDisplayTime(dayjs.utc(created).local().fromNow());
-      }, 1000);
-      // Clean up
-      return () => clearInterval(interval);
+      }, 60000);
     }, 0);
 
-    return () => clearTimeout(startTimer);
+    // Clean up both timeout and interval
+    return () => {
+      clearTimeout(startTimer);
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [created]);
 
   return <p data-testid="post-time-ago">{displayTime}</p>;
